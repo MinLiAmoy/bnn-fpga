@@ -25,8 +25,8 @@
 const unsigned CONVOLVERS = 2;
 
 const unsigned WORD_SIZE = 64;
-const unsigned WT_SIZE = 9;
-const unsigned CONV_W_PER_WORD = 7;
+const unsigned WT_SIZE = 9;   // ML: a 3*3 filter contains 9 parameters
+const unsigned CONV_W_PER_WORD = 7;   // ML: 64/9 = 7, so a word contains 7 sets of weight
 const unsigned CONV1_W_PER_WORD = 4;
 const unsigned KH_PER_WORD = 4;
 const unsigned BYTE_SIZE = 8;
@@ -36,7 +36,7 @@ const unsigned C_WT_WORDS   = ((WT_L+CONV_W_PER_WORD-1)/CONV_W_PER_WORD + CONVOL
 const unsigned WT_WORDS     = C_WT_WORDS*CONVOLVERS;
 const unsigned KH_WORDS     = WT_L/128*16 / WORD_SIZE;
 
-const unsigned DMEM_WORDS   = 128*32*32 / WORD_SIZE;
+const unsigned DMEM_WORDS   = 128*32*32 / WORD_SIZE;    // ML: data memory words?
 const unsigned C_DMEM_WORDS = DMEM_WORDS / CONVOLVERS;
 const unsigned DMEM_O_WORDS = 512*4*4 / WORD_SIZE;
 const unsigned DB_MEM_WORDS = 32*32;
@@ -48,7 +48,7 @@ const unsigned BANK_WIDTH = 8;
 const unsigned LOG_BANK_WIDTH = 3;
 
 const unsigned CONV_ROWS = 3;
-const unsigned CONV_COLS = BANK_WIDTH+2;
+const unsigned CONV_COLS = BANK_WIDTH+2;    // ML: 2->0 padding
 const unsigned CONV_BANKS = WORD_SIZE / BANK_WIDTH;
 
 //-------------------------------------------------------------------
@@ -67,7 +67,7 @@ typedef ap_int<16> NormComp;
 typedef ap_int<16> DenseSum;
 typedef ap_fixed<16,12> DenseNorm;
 
-typedef ap_fixed<20,2, AP_RND> C1InputType;
+typedef ap_fixed<20,2, AP_RND> C1InputType;  // ML: input pixel are 20-bit fixed-point
 typedef ap_fixed<24,6, AP_RND> C1ConvType;
 
 

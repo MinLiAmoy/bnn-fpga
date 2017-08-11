@@ -36,13 +36,13 @@ void print_params(T params[CONVOLVERS][K][K]) {
 template<typename T>
 void print_line_buffer_m(T lbuf[CONV_BANKS]) {
   for (unsigned wr = 0; wr < CONV_ROWS; ++wr) {
-  for (unsigned bank = 0; bank < CONV_BANKS; ++bank) {
-    for (unsigned wc = 0; wc < CONV_COLS; ++wc) {
-      printf ("%3d", lbuf[bank][wr][wc].to_int());
+    for (unsigned bank = 0; bank < CONV_BANKS; ++bank) {
+      for (unsigned wc = 0; wc < CONV_COLS; ++wc) {
+        printf ("%3d", lbuf[bank][wr][wc].to_int());
+      }
+      printf (" |");
     }
-    printf (" |");
-  }
-  printf ("\n");
+    printf ("\n");
   }
 }
 
@@ -62,7 +62,7 @@ ConvOut conv3x3b(
   ConvOut sum = 0;
   for (ap_uint<2> kr = 0; kr < K; ++kr) {
     for (ap_uint<2> kc = 0; kc < K; ++kc) {
-      TwoBit data = line_buffer_m[bank][kr][cc+kc];
+      TwoBit data = line_buffer_m[bank][kr][cc+kc];   // ML: the conv kernal is reversed!
       const Bit& wt = conv_params_m[2-kr][2-kc];
       data[1] = (wt & data[0]) ^ data[1];
       sum += data;
@@ -74,10 +74,11 @@ ConvOut conv3x3b(
 // -----------------------------------------------------------------------
 // Produce 32 elements of conv results
 // -----------------------------------------------------------------------
+// ML: remember the basic atom of processing is a word!
 void conv_word(
     const TwoBit line_buffer_m[CONV_BANKS][CONV_ROWS][CONV_COLS],
     const Bit conv_params_m[K][K],
-    ConvOut conv_out_buffer_m[WORD_SIZE]
+    ConvOut conv_out_buffer_m[WORD_SIZE]    // ML: typedef ap_int<5> ConvOut
 ) {
   for (ap_uint<4> bank = 0; bank < CONV_BANKS; ++bank) {
     for (ap_uint<4> cc = 0; cc < BANK_WIDTH; ++cc) {
@@ -110,10 +111,11 @@ void process_word(
 
   // Prologue
   // Update bottom row, slices are shifted left. Some slices copied from previous word (middle row)
-  for (ap_uint<4> bank = 0; bank < CONV_BANKS; ++bank) {
+  // ML: it's the bit sel mudule mentioned in the paper
+  for (ap_uint<4> bank = 0; bank < CONV_BANKS; ++bank) {    // ML: in this case CONV_BANKS equals 8!
     ap_int<6> s_idx = bank + slices_per_line - CONV_BANKS;
     if (s_idx < 0) {
-      // set to zero or copy from old word (middle row)
+      // set to zero or copy from old word (middle row)   // ML: copy from the middle row!
       for (ap_uint<4> cc = 1; cc < CONV_COLS-1; ++cc) {
         line_buffer_m[bank][CONV_ROWS-1][cc] = old_word_buffer_m[CONV_BANKS+s_idx][cc];
       }
@@ -122,7 +124,7 @@ void process_word(
     } else {
       // fill from new word
       for (ap_uint<4> cc = 1; cc < CONV_COLS-1; ++cc) {
-        line_buffer_m[bank][CONV_ROWS-1][cc] = (last_wrd) ? TwoBit(0) : word_buffer_m[s_idx][cc];
+        line_buffer_m[bank][CONV_ROWS-1][cc] = (last_wrd) ? TwoBit(0) : word_buffer_m[s_idx][cc];   // ML: update the bottom row!! the last row of line_buffer_m[]
       }
       line_buffer_m[bank][CONV_ROWS-1][0          ] = (last_wrd || lb[bank]) ? TwoBit(0) : word_buffer_m[s_idx][0];
       line_buffer_m[bank][CONV_ROWS-1][CONV_COLS-1] = (last_wrd || rb[bank]) ? TwoBit(0) : word_buffer_m[s_idx][CONV_COLS-1];
@@ -139,6 +141,7 @@ void process_word(
   
   // Update
   // Fill line buffer with lines from the new word
+  // ML: update stadegy, referring to the fig3. in the paper!
   for (ap_uint<4> bank = 0; bank < CONV_BANKS; ++bank) {
     // --------------------------------------------------------------
     // Top row, slices are shifted right by slices_per_line
@@ -181,7 +184,7 @@ void process_word(
 // * Make sure this function gets inlined by VHLS, or cosim may fail!
 // -----------------------------------------------------------------------
 void bin_conv(
-    Word wt_mem[CONVOLVERS][C_WT_WORDS],
+    Word wt_mem[CONVOLVERS][C_WT_WORDS], 
     NormComp nc,
     Word dmem[2][CONVOLVERS][C_DMEM_WORDS],
     ap_uint<1> d_i_idx,
@@ -223,9 +226,11 @@ void bin_conv(
 
   // ---------------------------------------------------------------------
   // Calculate edge padding flag bits
-  const ap_uint<4> log_slice = log_width - LOG_BANK_WIDTH;
+  // ML: assume the width is 32, then the slice is 4, so the 1st, 5th bank shoud the flagged lb
+  // ML: the 4th, and 8th shoud be flagged rb
+  const ap_uint<4> log_slice = log_width - LOG_BANK_WIDTH;    // ML: if width = 32, then log_slice = 4
   const ap_uint<4> w_div_8 = (1 << log_width) >> 3;
-  assert (w_div_8 > 0);
+  assert (w_div_8 > 0);   // ML: make sure that width >= 8
   ap_uint<4> mask = ~ap_uint<4>(0);   // set mask to all 1s
   mask = mask >> (4-log_slice);
   for (ap_uint<4> bank = 0; bank < CONV_BANKS; ++bank) {
@@ -287,6 +292,7 @@ void bin_conv(
         } else {
           ++wt_offset;
         }
+        // ML: load weight from wt_mem. everytime load 2 3*3weight to wt_word_buffer 
         //print_wt_word(wt_word_buffer[0]);
 
         // -------------------------------------------------------------------
@@ -322,6 +328,8 @@ void bin_conv(
               TwoBit(0) : encode_bit(word[ap_uint<6>(bank*BANK_WIDTH-1)]);
             word_buffer[m][bank][CONV_COLS-1] = (bank==CONV_BANKS-1) ?
               TwoBit(0) : encode_bit(word[ap_uint<6>(bank*BANK_WIDTH+BANK_WIDTH)]);
+            // ML: because the CONV_BANKS = bank_width+2, so have to add 2 bit. right now dont have to consider padding 0
+            // ML: have been consider when construct the line buffer
           }
         }
       }
@@ -339,7 +347,7 @@ void bin_conv(
           for (IdxType cc = 0; cc < CONV_COLS; ++cc) {
             old_word_buffer[m][bank][cc] = word_buffer[m][bank][cc];
         } }
-      }
+      } // ML: copy the word_buffer to old_word_buffer. when word is the fist or the last word of image, the situation is special
 
       // -------------------------------------------------------------------
       // Sum results across convolvers
@@ -347,10 +355,10 @@ void bin_conv(
       for (IdxType i = 0; i < WORD_SIZE; ++i) {
         // Ignore conv results after processing the first word
         if (wrd > 0) {
-          ConvSum s = 0;
+          ConvSum s = 0;    // ML: s sets to 0 every cycle
           for (IdxType m = 0; m < CONVOLVERS; ++m)
             s += conv_out_buffer[m][i];
-          fixed_buffer[wrd_phase-1][i] += s;
+          fixed_buffer[wrd_phase-1][i] += s;  // ML: add two conv out from different Convolvers to fixed_buffer!
         }
       }
 
@@ -382,7 +390,7 @@ void bin_conv(
 
     for (IdxType b = 0; b < WORD_SIZE; ++b) {
       #pragma HLS unroll
-      fixed_buffer[w][b] = fixed_temp[b];
+      fixed_buffer[w][b] = fixed_temp[b];   // now fixed_buffer[w][b]'w range 0 to words_per_image, which is reasonable!
     }
   }
 
@@ -460,11 +468,11 @@ void fp_conv(
     ap_uint<1> d_o_idx,
     const Address kh_index,
     const Address o_index,
-    const unsigned N
+    const unsigned N        // ML: N supposed to be 128 which is num of output fmaps
 ) {
   const unsigned M = 3;
-  const unsigned S = 32;
-  const unsigned OUTWORDS = 16; // words per output image
+  const unsigned S = 32;    //supposed to be the num of column of input images 
+  const unsigned OUTWORDS = 16; // words per output image  // ML: 32*32/64 = 16
 
   C1InputType win[M][K][K];
   C1InputType lbuf[M][K-1][S];
@@ -476,8 +484,8 @@ void fp_conv(
 
   // Parallelized across m, better for HLS
   LOOP_FP_CONV_O:
-  for (IdxType n = 0; n < N; ++n) {
-
+  for (IdxType n = 0; n < N; ++n) {   
+    // ML: for every cycle, output a channel of fmaps
     // clear linebuffers for each new output map
     LOOP_RESET_LINEBUFFERS:
     for (IdxType m = 0; m < M; ++m) {

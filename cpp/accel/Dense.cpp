@@ -11,6 +11,8 @@ static Timer t_last ("last");
 // -----------------------------------------------------------------------
 // Performs dense dot product on M input bits, n*M is the weight offset
 // -----------------------------------------------------------------------
+// ML: the size of in[] is like 1*M and the size of w is n*M where M%word_size = 0
+// ML: a call of dotproduct_m can compute a dotproduct using index of n
 int dotproduct_m(
     const Word* in,
     const Word* w,
@@ -44,6 +46,8 @@ int dotproduct_m(
 // -----------------------------------------------------------------------
 // Internal dense layer
 // -----------------------------------------------------------------------
+// ML: k, h is the coefficient of BNN!
+// MK: the size of in is x*word_size = M; the size of out is x*word_size = N!
 void dense_layer_cpu(
     const Word*  wt,
     const float* k_data,
@@ -72,6 +76,7 @@ void dense_layer_cpu(
 // -----------------------------------------------------------------------
 // Final dense layer
 // -----------------------------------------------------------------------
+// ML: N is the dimension of labels and the funciton outputs the predicition!
 int last_layer_cpu(
     const Word*  wt,
     const float* k_data,
