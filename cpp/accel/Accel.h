@@ -57,13 +57,13 @@ const unsigned CONV_BANKS = WORD_SIZE / BANK_WIDTH;
 enum LayerTypeEnum {LAYER_CONV1, LAYER_CONV, LAYER_DENSE, LAYER_LAST};
 
 typedef ap_int<WORD_SIZE> Word;
-typedef ap_int<WT_SIZE> WtType;
+typedef ap_int<WT_SIZE> WtType;   // ML: WtType ... ap_int<9>
 typedef ap_uint<16> Address;
 typedef ap_int<12> ConvSum;
 typedef ap_int<5> ConvOut;
 typedef ap_uint<10> IdxType;
-typedef ap_fixed<16,4> C1Comp;
-typedef ap_int<16> NormComp;
+typedef ap_fixed<16,4> C1Comp;    // ML: k, h be quantized to be 16 bits
+typedef ap_int<16> NormComp;    // ML: about Batch Norm?
 typedef ap_int<16> DenseSum;
 typedef ap_fixed<16,12> DenseNorm;
 
@@ -77,7 +77,7 @@ typedef ap_fixed<24,6, AP_RND> C1ConvType;
 template<typename T>
 void load_kh(T& comp, const Word kh_mem[KH_WORDS], Address idx) {
   Word kh_word = kh_mem[idx/KH_PER_WORD];
-  IdxType off = idx % KH_PER_WORD;
+  IdxType off = idx % KH_PER_WORD;    // ML: KH_PER_WORD is 4 and every KH is 16 bit fixed point format indeed!
   if (off == 0)
     comp(15,0) = kh_word(15, 0);
   else if (off == 1)

@@ -186,7 +186,7 @@ void process_word(
 void bin_conv(
     Word wt_mem[CONVOLVERS][C_WT_WORDS], 
     NormComp nc,
-    Word dmem[2][CONVOLVERS][C_DMEM_WORDS],
+    Word dmem[2][CONVOLVERS][C_DMEM_WORDS],   // ML: one of dmem is the input, one of dmen is the output, depend on the d_i_idx and d_o_idx
     ap_uint<1> d_i_idx,
     ap_uint<1> d_o_idx,
     const unsigned   n_inputs,
@@ -414,7 +414,7 @@ void bin_conv(
     const ap_uint<6> out_offset = (w % 4) << 4;
 
     for (ap_uint<7> i = 0; i < WORD_SIZE; ++i) {
-      binword[i] = (fixed_buffer[w][i] >= nc) ? 0 : 1;
+      binword[i] = (fixed_buffer[w][i] >= nc) ? 0 : 1;    //  ML: find out what is nc?
     }
 
     if (norm_mode == 1) {
@@ -453,7 +453,7 @@ void bin_conv(
       }
     }
 
-    dmem[d_o_idx][o_bank_idx][o_bank_offset] = outword;
+    dmem[d_o_idx][o_bank_idx][o_bank_offset] = outword; // ML: this three idex dont understand
   }
 }
 
@@ -477,7 +477,7 @@ void fp_conv(
   C1InputType win[M][K][K];
   C1InputType lbuf[M][K-1][S];
   Word outwords[OUTWORDS];
-  WtType wtbuf[M];
+  WtType wtbuf[M];    // ML: WtType ... ap_int<9>
 
   Address wt_offset = 0;
   ap_uint<3> wt_addr = 0;
@@ -485,14 +485,14 @@ void fp_conv(
   // Parallelized across m, better for HLS
   LOOP_FP_CONV_O:
   for (IdxType n = 0; n < N; ++n) {   
-    // ML: for every cycle, output a channel of fmaps
+    // ML: for every cycle, output a single fmaps
     // clear linebuffers for each new output map
     LOOP_RESET_LINEBUFFERS:
     for (IdxType m = 0; m < M; ++m) {
       PROLOG_COLS: for (IdxType c = 0; c < S; ++c) {
         PROLOG_ROWS: for (IdxType r = 0; r < K/2; ++r) {
           for (IdxType lr = 0; lr < K-2; ++lr) {
-            lbuf[m][lr][c] = lbuf[m][lr+1][c];
+            lbuf[m][lr][c] = lbuf[m][lr+1][c]; // ML: in case of K equals 3, just copy lbuf[m][1][c]-> lbuf[m][0][c]
           }
           lbuf[m][K-2][c] = 0;
       } }
@@ -500,11 +500,12 @@ void fp_conv(
 
     // The weights for the 1st conv layer are just laid out
     // linearly across wt_mem, 3 weights per 64-bit word
+    // ML: is very important that a 64-bit word contains 3 9-bit weights, which means only 0-26 bit in wt-mem has value
     DB_PRINT(3, "n = %u\n", n.to_int());
     Word wt_word = wt_mem[n % CONVOLVERS][n / CONVOLVERS];
     LOOP_LOAD_WTS:
     for (ap_uint<2> m = 0; m < M; ++m) {
-      wtbuf[m] = wt_word((m+1)*WT_SIZE-1, m*WT_SIZE);
+      wtbuf[m] = wt_word((m+1)*WT_SIZE-1, m*WT_SIZE);   // ML: dont see the opo wt_word(), seems like copy.
       DB(3, print_wt(wtbuf[m]));
       DB(3, printf("--\n"));
     }
