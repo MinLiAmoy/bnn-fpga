@@ -14,7 +14,7 @@
   typedef ap_int<2> TwoBit;
 
   typedef float KType;
-  typedef float HType;    // ML: KType and HType are used in the last layer, where outputs are not binaried
+  typedef float HType;    
 
   typedef float NormOutput;
   typedef ap_int<14> ConvOutput;
@@ -29,7 +29,7 @@
   typedef ap_int<2> TwoBit;
 
   typedef ap_fixed<16,2> KType;
-  typedef ap_fixed<16,4> HType;
+  typedef ap_fixed<16,4> HType;   // ML: KType and HType are used in the last layer, where outputs are not binaried
 
   typedef ap_fixed<16,5> NormOutput;
   typedef ap_int<14> ConvOutput;

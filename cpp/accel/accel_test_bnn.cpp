@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
     const float* weights = params.float_data(widx_tab[l]);
     set_weight_array(wt[l], weights, l+1);    // ML: conv:-1->-1, 1->1; dense: -1->1, 1->0
 
-    kh[l] = new Word[N/KH_PER_WORD * sizeof(Word)];   // ML: * why op *sizeof(Word)?
+    kh[l] = new Word[N/KH_PER_WORD * sizeof(Word)];   // ML: * why op *sizeof(Word)? bug! when it comes to last layer, the size is N/2 but not N
     const float* k = params.float_data(kidx_tab[l]);
     const float* h = params.float_data(hidx_tab[l]);
     set_bnorm_array(kh[l], k, h, l+1);

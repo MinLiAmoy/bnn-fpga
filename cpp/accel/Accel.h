@@ -28,7 +28,7 @@ const unsigned WORD_SIZE = 64;
 const unsigned WT_SIZE = 9;   // ML: a 3*3 filter contains 9 parameters
 const unsigned CONV_W_PER_WORD = 7;   // ML: 64/9 = 7, so a word contains 7 sets of weights
 const unsigned CONV1_W_PER_WORD = 4;
-const unsigned KH_PER_WORD = 4;
+const unsigned KH_PER_WORD = 4;   // ML: 4 -k/h per word
 const unsigned BYTE_SIZE = 8;
 const unsigned K = 3;
 const unsigned WT_L         = 16*4*512; // parameter to control wt mem size
