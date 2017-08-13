@@ -26,7 +26,7 @@ const unsigned CONVOLVERS = 2;
 
 const unsigned WORD_SIZE = 64;
 const unsigned WT_SIZE = 9;   // ML: a 3*3 filter contains 9 parameters
-const unsigned CONV_W_PER_WORD = 7;   // ML: 64/9 = 7, so a word contains 7 sets of weight
+const unsigned CONV_W_PER_WORD = 7;   // ML: 64/9 = 7, so a word contains 7 sets of weights
 const unsigned CONV1_W_PER_WORD = 4;
 const unsigned KH_PER_WORD = 4;
 const unsigned BYTE_SIZE = 8;
@@ -54,7 +54,7 @@ const unsigned CONV_BANKS = WORD_SIZE / BANK_WIDTH;
 //-------------------------------------------------------------------
 // Typedefs
 //-------------------------------------------------------------------
-enum LayerTypeEnum {LAYER_CONV1, LAYER_CONV, LAYER_DENSE, LAYER_LAST};
+enum LayerTypeEnum {LAYER_CONV1, LAYER_CONV, LAYER_DENSE, LAYER_LAST};    // ML: project to 0,1,2,3
 
 typedef ap_int<WORD_SIZE> Word;
 typedef ap_int<WT_SIZE> WtType;   // ML: WtType ... ap_int<9>
@@ -62,8 +62,8 @@ typedef ap_uint<16> Address;
 typedef ap_int<12> ConvSum;
 typedef ap_int<5> ConvOut;
 typedef ap_uint<10> IdxType;
-typedef ap_fixed<16,4> C1Comp;    // ML: k, h be quantized to be 16 bits
-typedef ap_int<16> NormComp;    // ML: about Batch Norm?
+typedef ap_fixed<16,4> C1Comp;    // ML: -h/k be quantized to be 16 bits fixed-point on the fpconv layer
+typedef ap_int<16> NormComp;    // ML: -h/k be quantized to be 16 bits int
 typedef ap_int<16> DenseSum;
 typedef ap_fixed<16,12> DenseNorm;
 

@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 
   const unsigned lconv  = 6;  // last conv
   const unsigned ldense = 8;  // last dense
-  const bool DENSE_LAYER_CPU = getenv("BNN_DENSE_LAYER_CPU") != NULL;
+  const bool DENSE_LAYER_CPU = getenv("BNN_DENSE_LAYER_CPU") != NULL;   // ML: can be defined above
   const bool LAST_LAYER_CPU = getenv("BNN_LAST_LAYER_CPU") != NULL;
   if (DENSE_LAYER_CPU)
     printf ("## Dense layer CPU is turned on ##\n");
@@ -28,12 +28,12 @@ int main(int argc, char** argv) {
     printf ("## Last layer CPU is turned on ##\n");
 
   // print some config numbers
-  printf ("* WT_WORDS   = %u\n", WT_WORDS);
-  printf ("* KH_WORDS   = %u\n", KH_WORDS);
+  printf ("* WT_WORDS   = %u\n", WT_WORDS); 
+  printf ("* KH_WORDS   = %u\n", KH_WORDS);     // ML: *
 
   // Load input data
   printf ("## Loading input data ##\n");
-  Cifar10TestInputs X(n_imgs);
+  Cifar10TestInputs X(n_imgs);    
   Cifar10TestLabels y(n_imgs);
 
   // Load parameters
@@ -49,13 +49,13 @@ int main(int argc, char** argv) {
     const unsigned M = M_tab[l];
     const unsigned N = N_tab[l];
     if (layer_is_conv(l+1))
-      wt[l] = new Word[WTS_TO_WORDS(M*N)];
+      wt[l] = new Word[WTS_TO_WORDS(M*N)];    // ML: roughly a word contains 7 binarized 3*3 conv param.
     else
-      wt[l] = new Word[M*N / WORD_SIZE];
+      wt[l] = new Word[M*N / WORD_SIZE];    // ML: dense layer...
     const float* weights = params.float_data(widx_tab[l]);
-    set_weight_array(wt[l], weights, l+1);
+    set_weight_array(wt[l], weights, l+1);    // ML: conv:-1->-1, 1->1; dense: -1->1, 1->0
 
-    kh[l] = new Word[N/KH_PER_WORD * sizeof(Word)];
+    kh[l] = new Word[N/KH_PER_WORD * sizeof(Word)];   // ML: * why op *sizeof(Word)?
     const float* k = params.float_data(kidx_tab[l]);
     const float* h = params.float_data(hidx_tab[l]);
     set_bnorm_array(kh[l], k, h, l+1);

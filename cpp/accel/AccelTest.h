@@ -8,13 +8,14 @@
 
 const unsigned N_LAYERS = 9;
 const unsigned L_CONV = 6;
-const unsigned S_tab[] =  { 32,  32,  16,  16,   8,   8,    4,    1,    1,   1};
+const unsigned S_tab[] =  { 32,  32,  16,  16,   8,   8,    4,    1,    1,   1};    // ML: dim of input
 const unsigned M_tab[] =  {  3, 128, 128, 256, 256, 512, 8192, 1024, 1024};
-const unsigned N_tab[] =  {128, 128, 256, 256, 512, 512, 1024, 1024,   10};
-const unsigned T_tab[] =  {  0,   1,   1,   1,   1,   1,    2,    2,    3};
-const unsigned widx_tab[] = {0,   3,   6,   9,  12,  15,   18,   21,   24};
-const unsigned kidx_tab[] = {1,   4,   7,  10,  13,  16,   19,   22,   25};
-const unsigned hidx_tab[] = {2,   5,   8,  11,  14,  17,   20,   23,   26};
+const unsigned N_tab[] =  {128, 128, 256, 256, 512, 512, 1024, 1024,   10};     // ML: the dim of inputs and outputs
+const unsigned T_tab[] =  {  0,   1,   1,   1,   1,   1,    2,    2,    3};     // ML: the idx of LayerTypeEnum to the sequential layers
+// ML: n_file in param arc is 26
+const unsigned widx_tab[] = {0,   3,   6,   9,  12,  15,   18,   21,   24};     // ML: the idx of weights array in arc
+const unsigned kidx_tab[] = {1,   4,   7,  10,  13,  16,   19,   22,   25};     // ML: the idx of k array in arc
+const unsigned hidx_tab[] = {2,   5,   8,  11,  14,  17,   20,   23,   26};     // ML: the idx of h array in arc
 const unsigned pool_tab[] = {0,   1,   0,   1,   0,   1,    0,    0,    0};
 
 // layer_idx goes from 1 to 9

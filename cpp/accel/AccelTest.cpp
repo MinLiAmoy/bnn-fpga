@@ -38,9 +38,9 @@ unsigned log2(unsigned x) {
 // number of Words allocated to store n conv weights
 unsigned WTS_TO_WORDS(const unsigned n) {
   // divide n weights by W_PER_WORD
-  const unsigned words = (n + CONV_W_PER_WORD-1) / CONV_W_PER_WORD;
+  const unsigned words = (n + CONV_W_PER_WORD-1) / CONV_W_PER_WORD;   // ML: divide by CONV_W_PER_WORD and rounding to upper bound
   // round up to nearest convolvers
-  return ((words+CONVOLVERS-1) / CONVOLVERS) * CONVOLVERS;
+  return ((words+CONVOLVERS-1) / CONVOLVERS) * CONVOLVERS;    // ML: make the num to be the mutiple of CONVOLVERS
 }
 
 //------------------------------------------------------------------------
@@ -87,7 +87,7 @@ void set_dense_weight_array(Word* w, const float* wts, unsigned M, unsigned N) {
 //------------------------------------------------------------------------
 // Binarize and pack the batch norm parameters
 //------------------------------------------------------------------------
-const int M_INT = 32767;
+const int M_INT = 32767;    // ML: ap_int<16> max range = 2^15 -1 = 32767
 
 int round_away_from_zero(float f) {
   return f < 0 ? floor(f) : ceil(f);
@@ -116,7 +116,7 @@ void set_bnorm_array1(Word* kh, const float* k, const float* h, unsigned layer_i
     if (layer_is_fpconv(layer_idx)) {
       // fixed point number for first conv layer
       C1Comp fi = compute_thresh(k[n], h[n]);
-      comp(15,0) = fi(15,0);
+      comp(15,0) = fi(15,0);    // ML: fixed point number of first conv layer, but NormComp is int16, so when use it, should conver it to fixed-point format
     } else {
       // integer number for all other layer, round away from 0
       comp = round_away_from_zero( compute_thresh(k[n], h[n]) );

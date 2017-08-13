@@ -13,8 +13,9 @@
 /* Parameters are organized into arrays. A layer may have multiple arrays of
  * params. For example Weight and Bias are two arrays for a Conv layer
  */
+// ML: * case of batch normalizaion?
 struct Params {
-  static const unsigned MAX_LAYERS = 64;
+  static const unsigned MAX_LAYERS = 64;    // ML: actually it's the max array number
 
   std::string m_filename;
   unsigned m_arrays;

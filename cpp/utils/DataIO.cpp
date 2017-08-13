@@ -4,7 +4,7 @@
 Cifar10TestInputs::Cifar10TestInputs(unsigned n)
   : m_size(n*CHANNELS*ROWS*COLS)
 {
-  data = new float[m_size];
+  data = new float[m_size];   // ML: data's type and size
 
   std::string full_filename = get_root_dir() + filename;
   DB_PRINT(2, "Opening data archive %s\n", full_filename.c_str());
@@ -13,11 +13,12 @@ Cifar10TestInputs::Cifar10TestInputs(unsigned n)
   assert(nfiles == 1);
 
   // We read m_size*4 bytes from the archive
+  // ML: data stored in Inputs is 32 bits float
   unsigned fsize = get_current_file_size(ar);
   assert(m_size*4 <= fsize);
 
   DB_PRINT(2, "Reading %u bytes\n", m_size*4);
-  read_current_file(ar, (void*)data, m_size*4);
+  read_current_file(ar, (void*)data, m_size*4);   // ML: read the inputs to data
   
   unzClose(ar);
 }

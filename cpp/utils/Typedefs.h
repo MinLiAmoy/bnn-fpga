@@ -10,11 +10,11 @@
   typedef float InputFixed;
 
   // Types for weights
-  typedef ap_int<1> Bit;
+  typedef ap_int<1> Bit;    
   typedef ap_int<2> TwoBit;
 
   typedef float KType;
-  typedef float HType;
+  typedef float HType;    // ML: KType and HType are used in the last layer, where outputs are not binaried
 
   typedef float NormOutput;
   typedef ap_int<14> ConvOutput;
