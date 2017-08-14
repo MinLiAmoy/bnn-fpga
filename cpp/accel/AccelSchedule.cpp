@@ -46,7 +46,7 @@ void compute_accel_schedule(
   // imgs_per_batch is the number of output images to compute per batch
   unsigned imgs_per_batch = 0;
   if (layer_type == LAYER_CONV1 || layer_type == LAYER_CONV)
-    imgs_per_batch = find_conv_batch_size(width, width_o, n_inputs, n_outputs);
+    imgs_per_batch = find_conv_batch_size(width, width_o, n_inputs, n_outputs);   // ML: determine how many inputs(fmaps) batch
 
   // recalculate some values if dense layer
   if (layer_type == LAYER_DENSE || layer_type == LAYER_LAST) {
@@ -57,12 +57,12 @@ void compute_accel_schedule(
   assert (imgs_per_batch != 0);
 
   unsigned n_batches = n_outputs / imgs_per_batch;
-  schedule.resize(n_batches);
+  schedule.resize(n_batches);   // ML: seems like n_batched same copy, schedule haven't been assigned
 
   // divide up the weights according to the value of imgs_per_batch
   unsigned idx = 0;
   for (unsigned o = 0; o < n_outputs; o+=imgs_per_batch, idx++) {
-    layer_mode[0] = (o==0) ? 1 : 0;
+    layer_mode[0] = (o==0) ? 1 : 0;   // ML: layer_mode(1)=1-> new layers
 
     // add a new invocation to the schedule
     schedule[idx].n_inputs = n_inputs;
@@ -78,13 +78,13 @@ void compute_accel_schedule(
     else if (layer_type == LAYER_CONV)
       load_conv_weights(wt, wt_i, o, n_inputs, imgs_per_batch);
     else
-      load_dense_weights(wt, wt_i, o, n_inputs, imgs_per_batch);
+      load_dense_weights(wt, wt_i, o, n_inputs, imgs_per_batch);    // ML: the weights are loaded on the wt_i
     // divide up the kh params
     Word* kh_i = schedule[idx].kh;
     if (layer_type != LAYER_LAST)
       load_kh (kh, kh_i, o, imgs_per_batch);
     else
-      load_kh (kh, kh_i, o, 2*imgs_per_batch);
+      load_kh (kh, kh_i, o, 2*imgs_per_batch);  // ML: the last layer neeed double space
   }
 }
 
@@ -145,7 +145,7 @@ void run_accel_schedule(
 unsigned find_conv_batch_size(unsigned width, unsigned width_o,
                          unsigned n_inputs, unsigned n_outputs) {
   const unsigned input_bsize = DMEM_WORDS*WORD_SIZE / (width*width);
-  const unsigned wt_bsize = WT_WORDS*CONV_W_PER_WORD /  n_inputs;
+  const unsigned wt_bsize = WT_WORDS*CONV_W_PER_WORD /  n_inputs;   // the weight memory size can handle how many n_output one batch
   const unsigned kh_bsize = KH_WORDS*KH_PER_WORD;
   unsigned imgs_per_batch = DMEM_WORDS*WORD_SIZE / (width_o*width_o);
 
@@ -201,7 +201,7 @@ unsigned find_dense_batch_size(unsigned n_inputs, unsigned n_outputs) {
 void load_conv1_weights(Word* wt, Word* wt_o, unsigned o, unsigned n_out)
 {
   // curr is the index of the starting weight in [wt]
-  const unsigned M = 3;
+  const unsigned M = 3;   // ML: pack 3 weights per word
   unsigned curr = o*M;
   unsigned addr_i = curr / CONV_W_PER_WORD;
   unsigned off_i = curr % CONV_W_PER_WORD;

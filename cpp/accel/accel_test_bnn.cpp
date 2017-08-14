@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
   // allocate and binarize all weights
   // ---------------------------------------------------------------------
   Word* wt[N_LAYERS];
-  Word* kh[N_LAYERS];
+  Word* kh[N_LAYERS];   // ML: import variable
   for (unsigned l = 0; l < N_LAYERS; ++l) {
     const unsigned M = M_tab[l];
     const unsigned N = N_tab[l];

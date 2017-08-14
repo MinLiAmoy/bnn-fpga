@@ -36,9 +36,9 @@ const unsigned C_WT_WORDS   = ((WT_L+CONV_W_PER_WORD-1)/CONV_W_PER_WORD + CONVOL
 const unsigned WT_WORDS     = C_WT_WORDS*CONVOLVERS;
 const unsigned KH_WORDS     = WT_L/128*16 / WORD_SIZE;
 
-const unsigned DMEM_WORDS   = 128*32*32 / WORD_SIZE;    // ML: data memory words?
+const unsigned DMEM_WORDS   = 128*32*32 / WORD_SIZE;    // ML: input data memory words, 128*32*32 is the largest data size(the second layer input)
 const unsigned C_DMEM_WORDS = DMEM_WORDS / CONVOLVERS;
-const unsigned DMEM_O_WORDS = 512*4*4 / WORD_SIZE;
+const unsigned DMEM_O_WORDS = 512*4*4 / WORD_SIZE;    // ML: output data memory words, 512*4*4 is the last conv layer output data size 
 const unsigned DB_MEM_WORDS = 32*32;
 
 const unsigned PIX_PER_PHASE = 2*32*32;

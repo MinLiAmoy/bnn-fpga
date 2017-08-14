@@ -136,15 +136,15 @@ void set_bnorm_array2(Word* kh, const float* k, const float* h, unsigned N) {
     //printf ("** ki=%f, hi=%f\n", ki.to_float(), hi.to_float());
     Word w = kh[n/2];
     if (n % 2 == 0) {
-      w(15, 0) = ki(15,0);
+      w(15, 0) = ki(15,0);    // ML: * ? bug?
       w(31,16) = hi(15,0);
     } else {
       w(47,32) = ki(15,0);
       w(63,48) = hi(15,0);
     }
-    kh[n/2] = w;
+    kh[n/2] = w; 
   }
-}
+}   // ML: kh here have N/2 dim actually. 
 
 //------------------------------------------------------------------------
 // Binarize the input image

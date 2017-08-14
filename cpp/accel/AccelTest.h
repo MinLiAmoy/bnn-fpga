@@ -8,7 +8,7 @@
 
 const unsigned N_LAYERS = 9;
 const unsigned L_CONV = 6;
-const unsigned S_tab[] =  { 32,  32,  16,  16,   8,   8,    4,    1,    1,   1};    // ML: dim of input
+const unsigned S_tab[] =  { 32,  32,  16,  16,   8,   8,    4,    1,    1,   1};    // ML: dim of output
 const unsigned M_tab[] =  {  3, 128, 128, 256, 256, 512, 8192, 1024, 1024};
 const unsigned N_tab[] =  {128, 128, 256, 256, 512, 512, 1024, 1024,   10};     // ML: the dim of inputs and outputs
 const unsigned T_tab[] =  {  0,   1,   1,   1,   1,   1,    2,    2,    3};     // ML: the idx of LayerTypeEnum to the sequential layers
