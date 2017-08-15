@@ -95,7 +95,7 @@ void run_accel_schedule(
     Word* data_i,
     Word* data_o,
     unsigned layer_idx,
-    unsigned input_words,   // ML: when the layer is fist conv, input_words have values
+    unsigned input_words,   // ML: when the layer is fisrt conv1, input_words have values
     unsigned output_words,  // ML: when the layer is the last conv and dense layers are excuted on CPU, output_words have values
     ap_uint<1> dmem_mode,  // ML: 0 or 1
     AccelSchedule& s

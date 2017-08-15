@@ -707,10 +707,10 @@ void top(
     Word kh_i[KH_WORDS],
     Word dmem_i[DMEM_WORDS],
     Word dmem_o[DMEM_O_WORDS],
-    const Address    n_inputs,
-    const Address    n_outputs,
-    const Address    input_words,
-    const Address    output_words,
+    const Address    n_inputs, 
+    const Address    n_outputs,   
+    const Address    input_words, // ML: when i = 0, it's the first schedule of the layer, else equals zero
+    const Address    output_words,  // ML: when i = N-1, it's the last schedule of the layer, else equals zero
     const ap_uint<3> layer_mode,  // [0]='new layer', [2:1]='conv1,conv,dense,last'
     const ap_uint<1> dmem_mode,   // 0 means dmem[0] is input
     const ap_uint<2> width_mode,  // 0=8'b, 1=16'b, 2=32'b
@@ -739,13 +739,13 @@ void top(
   static Word kh_mem[KH_WORDS];
   static Word wt_mem[CONVOLVERS][C_WT_WORDS];
   static Address kh_index = 0;
-  static Address o_index = 0;
+  static Address o_index = 0;         // ML: "static", so it remains values when call the funciton again
 
-  if (layer_mode[0]) {
+  if (layer_mode[0]) {    // ML: new layer
     kh_index = 0;
     o_index = 0;
   } else {
-    kh_index = kh_index[0];
+    kh_index = kh_index[0];   // ML: *
   }
 
   ap_uint<1> d_i_idx = dmem_mode;
@@ -759,12 +759,12 @@ void top(
     if (layer_type == LAYER_CONV) {
       Address bank_idx = img_idx % CONVOLVERS;
       Address bank_off = img_idx / CONVOLVERS;
-      dmem[d_i_idx][bank_idx][(bank_off<<(2*width_mode)) + img_off] = dmem_i[i];
+      dmem[d_i_idx][bank_idx][(bank_off<<(2*width_mode)) + img_off] = dmem_i[i];  // ML: follow the second index.
     }
     else if (layer_type == LAYER_CONV1)
-      dmem[d_i_idx][i/C_DMEM_WORDS][i%C_DMEM_WORDS] = dmem_i[i];
+      dmem[d_i_idx][i/C_DMEM_WORDS][i%C_DMEM_WORDS] = dmem_i[i];  // ML: sequence words, equels to divede the data in to CONVOLVERS split. follow the last index
     else
-      dmem[d_i_idx][i%CONVOLVERS][i/CONVOLVERS] = dmem_i[i];
+      dmem[d_i_idx][i%CONVOLVERS][i/CONVOLVERS] = dmem_i[i];    // ML: follow the second index.
 
     if (++img_off == words_per_image) {
       img_off = 0;
@@ -775,7 +775,7 @@ void top(
   // Weight input, we must copy every 64-bit Word from the interface
   // into the accelerator
   LOOP_WT_I: for (Address i = 0; i < C_WT_WORDS*CONVOLVERS; ++i) {
-    wt_mem[i%CONVOLVERS][i/CONVOLVERS] = wt_i[i];
+    wt_mem[i%CONVOLVERS][i/CONVOLVERS] = wt_i[i];   // ML: also follow the second index
   }
   //printf ("\nAccel Weights:\n");
   //print_params3d(wt_mem[0], 0, n_inputs*n_outputs);
@@ -846,7 +846,7 @@ void top(
   img_off = 0;
   LOOP_DMEM_O: for (Address i = 0; i < output_words; ++i) {
     // exclude conv6 (width==8, norm_mode==2) here because it writes
-    // the output fmaps linearly
+    // the output fmaps linearly    // ML: very import, convert 512fmap and 4dim to 8192
     if (layer_type <= LAYER_CONV && !(width_mode == 0 && norm_mode == 2)) {
       Address bank_idx = img_idx % CONVOLVERS;
       Address bank_off = img_idx / CONVOLVERS;
