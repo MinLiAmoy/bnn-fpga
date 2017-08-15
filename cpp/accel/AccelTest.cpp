@@ -61,7 +61,7 @@ void set_conv_weight_array(Word* w, const float* wts, unsigned size) {
   unsigned wrd = 0, off = 0;
   for (unsigned m = 0; m < size; ++m) {
     for (unsigned i = 0; i < WT_SIZE; ++i) {
-      set_bit(w, wrd*WORD_SIZE+off*WT_SIZE+i, wts[m*WT_SIZE+i]>=0 ? Bit(0) : Bit(-1));
+      set_bit(w, wrd*WORD_SIZE+off*WT_SIZE+i, wts[m*WT_SIZE+i]>=0 ? Bit(0) : Bit(-1));  // ML: the sequence is 3,3,3,3...{M*N}...3
     }
     if (++off == CONV_W_PER_WORD) {
       off = 0;

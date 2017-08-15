@@ -62,7 +62,7 @@ void compute_accel_schedule(
   // divide up the weights according to the value of imgs_per_batch
   unsigned idx = 0;
   for (unsigned o = 0; o < n_outputs; o+=imgs_per_batch, idx++) {
-    layer_mode[0] = (o==0) ? 1 : 0;   // ML: layer_mode(1)=1-> new layers
+    layer_mode[0] = (o==0) ? 1 : 0;   // ML: layer_mode(0)=1-> new layers
 
     // add a new invocation to the schedule
     schedule[idx].n_inputs = n_inputs;
@@ -76,7 +76,7 @@ void compute_accel_schedule(
     if (layer_type == LAYER_CONV1)
       load_conv1_weights(wt, wt_i, o, imgs_per_batch);
     else if (layer_type == LAYER_CONV)
-      load_conv_weights(wt, wt_i, o, n_inputs, imgs_per_batch);
+      load_conv_weights(wt, wt_i, o, n_inputs, imgs_per_batch);   // ML: be care about the CONVOLVERS banks number and its arrangement
     else
       load_dense_weights(wt, wt_i, o, n_inputs, imgs_per_batch);    // ML: the weights are loaded on the wt_i
     // divide up the kh params
@@ -102,13 +102,13 @@ void run_accel_schedule(
 ) {
   // weight mems
   static Word* wt_i = (Word*) MEM_ALLOC( WT_WORDS*sizeof(Word) );
-  static Word* kh_i = (Word*) MEM_ALLOC( KH_WORDS*sizeof(Word) );
+  static Word* kh_i = (Word*) MEM_ALLOC( KH_WORDS*sizeof(Word) );   // ML: the type is static, which means global variable.
   if (!wt_i || !kh_i) {
     fprintf(stderr, "**** ERROR: Alloc wt_i or kh_i failed in %s\n", __FILE__);
     exit(-2);
   }
 
-  const unsigned N = s.size();
+  const unsigned N = s.size();    // ML: good!
   const unsigned LAYERS = 9;
 
   // Invoke accelerator once for each element in the schedule
@@ -123,12 +123,12 @@ void run_accel_schedule(
     top(
         wt_i, kh_i, data_i, data_o,
         s[i].n_inputs, s[i].n_outputs,
-        (i==0)   ? input_words : 0,
-        (i==N-1) ? output_words : 0,
-        s[i].layer_mode,
-        dmem_mode,
-        s[i].width_mode,
-        s[i].norm_mode
+        (i==0)   ? input_words : 0,   // ML: when i = 0, it's the first schedule of the layer
+        (i==N-1) ? output_words : 0,  // ML: when i = N-1, it's the last schedule of the layer
+        s[i].layer_mode,  // [0]='new layer', [2:1]='conv1,conv,dense,last'
+        dmem_mode,    // 0 means dmem[0] is input
+        s[i].width_mode,  // 0=8'b, 1=16'b, 2=32'b
+        s[i].norm_mode    // 0='do nothing', 1='do norm', 2='do pool'
     );
 
     timers[LAYERS-1-layer_idx].stop();
@@ -233,7 +233,7 @@ void load_conv1_weights(Word* wt, Word* wt_o, unsigned o, unsigned n_out)
 // load weights for the bin conv layers, the weights are arranged within
 // the CONVOLVERS banks of the wt_mem such that the first bank contains
 // filters 0, CONVOLVERS, 2*CONVOLVERS, ...
-// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------    // ML: just as the comment say,
 void load_conv_weights(Word* wt, Word* wt_o,
                   unsigned o, unsigned n_in, unsigned n_out
 ) {
@@ -257,7 +257,7 @@ void load_conv_weights(Word* wt, Word* wt_o,
       // for each 3x3 filter, write it to the right partition
       w_o[i % CONVOLVERS] = w_o[i % CONVOLVERS] >> WT_SIZE;
       w_o[i % CONVOLVERS](CONV_W_PER_WORD*WT_SIZE-1, (CONV_W_PER_WORD-1)*WT_SIZE) =
-        w(WT_SIZE-1, 0);
+        w(WT_SIZE-1, 0);    // ML: a 9(3*3) bits
       w = w >> WT_SIZE;
 
       if (++off_i == CONV_W_PER_WORD) {
@@ -268,7 +268,7 @@ void load_conv_weights(Word* wt, Word* wt_o,
     }
 
     for (unsigned m = 0; m < CONVOLVERS; ++m)
-      wt_o[n*CONVOLVERS+m] = w_o[m];
+      wt_o[n*CONVOLVERS+m] = w_o[m];  // ML: each word belongs to one CONVOLVERS which contains three discret filters
   }
   //printf ("\nLoaded Weights:\n");
   //print_params3d(wt_o, 0, n_in*n_out);

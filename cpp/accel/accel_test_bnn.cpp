@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
   //--------------------------------------------------------------
   for (unsigned n = 0; n < n_imgs; ++n) {
     float* data = X.data + n*3*32*32;
-    binarize_input_images(data_i, data, 32);    // ML: every 3 pxiels in a word(3*20=60bits)
+    binarize_input_images(data_i, data, 32);    // ML: every 3 pxiels (20 bit fixed-point) in a word(3*20=60bits)
 
     //------------------------------------------------------------
     // Execute conv layers

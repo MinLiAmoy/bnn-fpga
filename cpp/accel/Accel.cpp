@@ -714,7 +714,7 @@ void top(
     const ap_uint<3> layer_mode,  // [0]='new layer', [2:1]='conv1,conv,dense,last'
     const ap_uint<1> dmem_mode,   // 0 means dmem[0] is input
     const ap_uint<2> width_mode,  // 0=8'b, 1=16'b, 2=32'b
-    const ap_uint<2> norm_mode    // 0='do nothing', 1='do norm', 2='do pool'
+    const ap_uint<2> norm_mode    // 0='do nothing', 1='do norm', 2='do pool'   // *ML: norm_mode cant be zero?
 ) {
   DB_PRINT(2, "==== Entering Accel ====\n");
   const ap_uint<2> layer_type = layer_mode(2,1);
