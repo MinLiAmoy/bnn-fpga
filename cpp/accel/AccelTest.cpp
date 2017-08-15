@@ -76,7 +76,7 @@ void set_dense_weight_array(Word* w, const float* wts, unsigned M, unsigned N) {
     for (unsigned m = 0; m < M; m+=WORD_SIZE) {
       Word wrd = 0;
       for (unsigned b = 0; b < WORD_SIZE; ++b) {
-        wrd[b] = ((wts[(m+b)*N+n] < 0) ? 1 : 0);
+        wrd[b] = ((wts[(m+b)*N+n] < 0) ? 1 : 0);  // ML: a M*N matrix, seems to read column like M, M, M...{Ns} M.
       }
       w[w_idx] = wrd;
       ++w_idx;
@@ -154,16 +154,16 @@ void binarize_input_images(Word* dmem_i, const float* inputs, unsigned S) {
   // Assume [in[ut] is a 3 channel non-interleaved image
   // We pack 3 interleaved pixels into each word
   const unsigned C = 3;
-  const unsigned W = C1InputType(0).length();
+  const unsigned W = C1InputType(0).length();  // ML: 20?
   assert(W <= WORD_SIZE/C);
   for (unsigned s = 0; s < S*S; ++s) {
     Word wrd = 0;
     for (unsigned c = 0; c < C; ++c) {
       C1InputType t1 = inputs[c*S*S+s];
       unsigned offset = W*c;
-      wrd(W-1+offset, offset) = t1(W-1, 0);
+      wrd(W-1+offset, offset) = t1(W-1, 0);  // ML:sequence 3, 3, 3, ...{M*M},3 in fixed-point format
     }
-    dmem_i[s] = wrd;
+    dmem_i[s] = wrd;    // ML: every 3 pixel in a wrd
   }
 }
 

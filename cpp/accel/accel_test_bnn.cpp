@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 
   // allocate memories for data i/o for the accelerator
   Word* data_i  = (Word*) MEM_ALLOC( DMEM_WORDS * sizeof(Word) );
-  Word* data_o  = (Word*) MEM_ALLOC( DMEM_O_WORDS * sizeof(Word) );
+  Word* data_o  = (Word*) MEM_ALLOC( DMEM_O_WORDS * sizeof(Word) );   // ML: allocate the memory for data at first and hold till the end.
   if (!data_i || !data_o) {
     fprintf (stderr, "**** ERROR: Alloc failed in %s\n", __FILE__);
     return (-2);
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
   //--------------------------------------------------------------
   for (unsigned n = 0; n < n_imgs; ++n) {
     float* data = X.data + n*3*32*32;
-    binarize_input_images(data_i, data, 32);
+    binarize_input_images(data_i, data, 32);    // ML: every 3 pxiels in a word(3*20=60bits)
 
     //------------------------------------------------------------
     // Execute conv layers

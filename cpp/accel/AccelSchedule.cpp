@@ -46,7 +46,7 @@ void compute_accel_schedule(
   // imgs_per_batch is the number of output images to compute per batch
   unsigned imgs_per_batch = 0;
   if (layer_type == LAYER_CONV1 || layer_type == LAYER_CONV)
-    imgs_per_batch = find_conv_batch_size(width, width_o, n_inputs, n_outputs);   // ML: determine how many inputs(fmaps) batch
+    imgs_per_batch = find_conv_batch_size(width, width_o, n_inputs, n_outputs);   // ML: determine how many output(fmaps) batch
 
   // recalculate some values if dense layer
   if (layer_type == LAYER_DENSE || layer_type == LAYER_LAST) {
@@ -95,9 +95,9 @@ void run_accel_schedule(
     Word* data_i,
     Word* data_o,
     unsigned layer_idx,
-    unsigned input_words,
-    unsigned output_words,
-    ap_uint<1> dmem_mode,
+    unsigned input_words,   // ML: when the layer is fist conv, input_words have values
+    unsigned output_words,  // ML: when the layer is the last conv and dense layers are excuted on CPU, output_words have values
+    ap_uint<1> dmem_mode,  // ML: 0 or 1
     AccelSchedule& s
 ) {
   // weight mems
